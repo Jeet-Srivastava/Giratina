@@ -26,8 +26,8 @@
     --warning-bg: rgba(245, 158, 11, 0.1);
     --danger: #ef4444;
     --danger-bg: rgba(239, 68, 68, 0.1);
-    --info: #3b82f6;
-    --info-bg: rgba(59, 130, 246, 0.1);
+    --info: #B5A382;
+    --info-bg: rgba(212, 195, 163, 0.1);
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
     --radius: 12px;
@@ -161,8 +161,8 @@ a:hover { text-decoration: underline; }
 
 .nav-link.active {
     color: var(--accent-light);
-    background: rgba(99, 102, 241, 0.1);
-    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(212, 195, 163, 0.1);
+    border-color: rgba(212, 195, 163, 0.3);
 }
 
 /* ── Chat Messages ─────────────────────────────── */
@@ -274,12 +274,12 @@ a:hover { text-decoration: underline; }
     letter-spacing: 0.02em;
 }
 
-.badge-intent { background: var(--info-bg); color: var(--info); border: 1px solid rgba(59,130,246,0.2); }
+.badge-intent { background: var(--info-bg); color: var(--info); border: 1px solid rgba(212,195,163,0.2); }
 .badge-urgency-low { background: var(--success-bg); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
-.badge-urgency-medium { background: var(--info-bg); color: var(--info); border: 1px solid rgba(59,130,246,0.2); }
+.badge-urgency-medium { background: var(--info-bg); color: var(--info); border: 1px solid rgba(212,195,163,0.2); }
 .badge-urgency-high { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245,158,11,0.2); }
 .badge-urgency-critical { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
-.badge-confidence { background: rgba(139,92,246,0.1); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+.badge-confidence { background: rgba(212,195,163,0.1); color: var(--accent-light); border: 1px solid rgba(212,195,163,0.2); }
 .badge-escalated { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
 .badge-resolved { background: var(--success-bg); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
 
@@ -542,7 +542,7 @@ a:hover { text-decoration: underline; }
 .example-query:hover {
     border-color: var(--accent);
     color: var(--text-primary);
-    background: rgba(99, 102, 241, 0.05);
+    background: rgba(212, 195, 163, 0.05);
     transform: translateX(4px);
 }
 
