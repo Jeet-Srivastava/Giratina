@@ -193,20 +193,23 @@ async def custom_swagger_ui_html():
     <head>
     <title>Support Knowledge Claw - API Docs</title>
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        body {{ background: #121212; color: #f5f5f5; font-family: 'Outfit', sans-serif; }}
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        body {{
+            background-color: #121212 !important;
+        }}
         .swagger-ui {{ font-family: 'Outfit', sans-serif; color: #f5f5f5; }}
-        .swagger-ui .info h1, .swagger-ui .info h2, .swagger-ui .info h3, .swagger-ui .info h4, .swagger-ui .info h5 {{ color: #D4C3A3; font-family: 'Playfair Display', serif; }}
-        .swagger-ui .info .title {{ color: #D4C3A3; }}
-        .swagger-ui p, .swagger-ui li, .swagger-ui table {{ color: #cccccc; }}
+        .swagger-ui .info .title {{ color: #D4C3A3 !important; font-family: 'Playfair Display', serif; font-weight: 600; }}
+        .swagger-ui .info p, .swagger-ui .info li, .swagger-ui .info table {{ color: #f5f5f5; font-family: 'Outfit', sans-serif; }}
+        .swagger-ui .info .link {{ display: none !important; }}
+        .swagger-ui .scheme-container {{ background: #1a1a1a; box-shadow: none; border-bottom: 1px solid rgba(212,195,163,0.15); }}
+        .swagger-ui .opblock .opblock-summary-operation-id, .swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-path__deprecated {{ color: #f5f5f5; font-family: 'Outfit', monospace; }}
         .swagger-ui .info p {{ color: #cccccc; }}
         .swagger-ui .info a {{ color: #E8DCC4; }}
-        .swagger-ui .scheme-container {{ background: #1a1a1a; box-shadow: none; border-bottom: 1px solid rgba(212,195,163,0.15); }}
         .swagger-ui .opblock-tag {{ color: #E8DCC4; font-family: 'Playfair Display', serif; font-size: 1.5rem; border-bottom-color: rgba(212,195,163,0.15); }}
         .swagger-ui .opblock {{ border: 1px solid rgba(212,195,163,0.15); background: rgba(26,26,26,0.7); box-shadow: none; border-radius: 12px; }}
         .swagger-ui .opblock .opblock-summary {{ border-bottom-color: rgba(212,195,163,0.15); }}
-        .swagger-ui .opblock .opblock-summary-operation-id, .swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-path__deprecated {{ color: #f5f5f5; }}
         .swagger-ui .opblock .opblock-summary-description {{ color: #cccccc; }}
         .swagger-ui .opblock.opblock-post {{ border-color: rgba(212,195,163,0.4); background: rgba(212,195,163,0.05); }}
         .swagger-ui .opblock.opblock-get {{ border-color: rgba(212,195,163,0.4); background: rgba(212,195,163,0.05); }}
