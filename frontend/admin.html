@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Dashboard — Support Knowledge Claw">
+    <title>Admin Dashboard — Support Knowledge Claw</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <header class="header" style="margin: -24px -24px 24px -24px; border-radius: 0;">
+            <div class="header-brand">
+                <div class="header-logo">🦀</div>
+                <div>
+                    <div class="header-title">Admin Dashboard</div>
+                    <div class="header-subtitle">Support Knowledge Claw</div>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <a href="/" class="nav-link">💬 Chat</a>
+                <a href="/admin" class="nav-link active">📊 Admin</a>
+                <a href="/docs" class="nav-link">📖 API</a>
+            </nav>
+        </header>
+
+        <!-- Stats Cards -->
+        <div id="statsGrid" class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Queries</div>
+                <div class="stat-value" id="totalQueries">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Escalations</div>
+                <div class="stat-value" id="totalEscalations">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Escalation Rate</div>
+                <div class="stat-value" id="escalationRate">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Confidence</div>
+                <div class="stat-value" id="avgConfidence">—</div>
+            </div>
+        </div>
+
+        <!-- Distribution Charts -->
+        <div class="distribution-grid">
+            <div class="distribution-card">
+                <h3>📋 Intent Distribution</h3>
+                <div id="intentChart" class="bar-chart">
+                    <div class="empty-state"><p>No data yet</p></div>
+                </div>
+            </div>
+            <div class="distribution-card">
+                <h3>⚡ Urgency Distribution</h3>
+                <div id="urgencyChart" class="bar-chart">
+                    <div class="empty-state"><p>No data yet</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Logs Table -->
+        <div>
+            <div class="section-title">📝 Recent Support Logs</div>
+            <div class="filters">
+                <select id="filterIntent" class="filter-select" onchange="loadLogs()">
+                    <option value="">All Intents</option>
+                    <option value="faq">FAQ</option>
+                    <option value="technical_issue">Technical Issue</option>
+                    <option value="transaction_problem">Transaction Problem</option>
+                    <option value="account_issue">Account Issue</option>
+                    <option value="feature_request">Feature Request</option>
+                </select>
+                <select id="filterUrgency" class="filter-select" onchange="loadLogs()">
+                    <option value="">All Urgencies</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+            <div id="logsTable" class="data-table-container">
+                <div class="loading"><div class="spinner"></div> Loading...</div>
+            </div>
+        </div>
+
+        <!-- Escalation Queue -->
+        <div style="margin-top: 24px;">
+            <div class="section-title">🚨 Escalation Queue</div>
+            <div id="escalationsTable" class="data-table-container">
+                <div class="loading"><div class="spinner"></div> Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

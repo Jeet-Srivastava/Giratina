@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Support Knowledge Claw — Autonomous AI Support Agent for Eko Micro-Entrepreneurs">
+    <title>Support Knowledge Claw — Eko AI Support</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="header-logo">🦀</div>
+                <div>
+                    <div class="header-title">Support Knowledge Claw</div>
+                    <div class="header-subtitle">Autonomous AI Support Agent</div>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <a href="/" class="nav-link active">💬 Chat</a>
+                <a href="/admin" class="nav-link">📊 Admin</a>
+                <a href="/docs" class="nav-link">📖 API</a>
+            </nav>
+        </header>
+
+        <!-- Messages Area -->
+        <div id="chatMessages" class="chat-messages">
+            <!-- Welcome Screen -->
+            <div id="welcomeScreen" class="welcome">
+                <div class="welcome-icon">🦀</div>
+                <h2>Support Knowledge Claw</h2>
+                <p>I'm an autonomous AI agent that helps Eko micro-entrepreneur retailers with support queries. Ask me anything about AePS, money transfers, commissions, account issues, and more.</p>
+                <div class="example-queries">
+                    <div class="example-query" onclick="sendExample(this)">
+                        💳 My AePS transaction failed but customer's money was deducted
+                    </div>
+                    <div class="example-query" onclick="sendExample(this)">
+                        💰 How do I check my commission and settlement status?
+                    </div>
+                    <div class="example-query" onclick="sendExample(this)">
+                        🔧 My biometric device is not being detected by the app
+                    </div>
+                    <div class="example-query" onclick="sendExample(this)">
+                        🔐 Someone is using my retailer account without permission
+                    </div>
+                    <div class="example-query" onclick="sendExample(this)">
+                        📱 How do I register as a new Eko retailer?
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <textarea
+                    id="chatInput"
+                    class="chat-input"
+                    placeholder="Ask about AePS, money transfers, commissions, account issues..."
+                    rows="1"
+                    onkeydown="handleKeydown(event)"
+                    oninput="autoResize(this)"
+                ></textarea>
+                <button id="sendBtn" class="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/chat.js"></script>
+</body>
+</html>
