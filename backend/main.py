@@ -229,14 +229,18 @@ async def custom_swagger_ui_html():
         .swagger-ui select {{ background: #222222; border-color: rgba(212,195,163,0.3); color: #f5f5f5; border-radius: 6px; }}
         .swagger-ui .models {{ border-color: rgba(212,195,163,0.15); background: rgba(26,26,26,0.7); border-radius: 12px; }}
         .swagger-ui .models h4 {{ color: #D4C3A3; font-family: 'Playfair Display', serif; border-bottom-color: rgba(212,195,163,0.15); }}
-        .swagger-ui .model-title {{ color: #f5f5f5; font-family: 'Outfit', sans-serif; background: transparent !important; }}
+        .swagger-ui .model-title {{ color: #D4C3A3 !important; font-family: 'Playfair Display', serif !important; background: transparent !important; }}
+        .swagger-ui .model-title__text {{ background: transparent !important; }}
         .swagger-ui .model-box-control {{ background: transparent !important; color: #f5f5f5 !important; }}
+        .swagger-ui .model-box-control:focus, .swagger-ui .model-box-control:hover {{ background: rgba(212,195,163,0.05) !important; }}
         .swagger-ui .model-toggle {{ background: transparent !important; color: #D4C3A3 !important; }}
         .swagger-ui .model-toggle::after {{ filter: invert(1); }}
-        .swagger-ui .model {{ color: #cccccc; }}
-        .swagger-ui .prop-type {{ color: #E8DCC4; }}
-        .swagger-ui .prop-format {{ color: #888888; }}
-        .swagger-ui svg {{ fill: #E8DCC4; }}
+        .swagger-ui .model {{ color: #cccccc; background: transparent !important; }}
+        .swagger-ui .prop-type {{ color: #E8DCC4 !important; background: transparent !important; }}
+        .swagger-ui .prop-format {{ color: #888888 !important; background: transparent !important; }}
+        .swagger-ui .type {{ color: #E8DCC4 !important; background: transparent !important; }}
+        .swagger-ui span.pointer, .swagger-ui span {{ background: transparent !important; }}
+        .swagger-ui svg {{ fill: #E8DCC4 !important; }}
         .swagger-ui .model-box {{ background: #1a1a1a; border-radius: 8px; }}
         .swagger-ui section.models .model-container {{ background: rgba(26,26,26,0.7); }}
         .swagger-ui .topbar {{ display: none; }}
