@@ -16,7 +16,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 
 from backend.config import settings
 from backend.database import init_db
@@ -89,6 +89,8 @@ app = FastAPI(
         "evaluates confidence, and escalates when needed."
     ),
     version="1.0.0",
+    docs_url=None,
+    redoc_url=None,
     lifespan=lifespan,
 )
 
@@ -180,6 +182,78 @@ async def root():
         "docs": "/docs",
         "health": "/api/health",
     })
+
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    """Serve customized Swagger UI."""
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Support Knowledge Claw - API Docs</title>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {{ background: #121212; color: #f5f5f5; font-family: 'Outfit', sans-serif; }}
+        .swagger-ui {{ font-family: 'Outfit', sans-serif; color: #f5f5f5; }}
+        .swagger-ui .info h1, .swagger-ui .info h2, .swagger-ui .info h3, .swagger-ui .info h4, .swagger-ui .info h5 {{ color: #D4C3A3; font-family: 'Playfair Display', serif; }}
+        .swagger-ui .info .title {{ color: #D4C3A3; }}
+        .swagger-ui p, .swagger-ui li, .swagger-ui table {{ color: #cccccc; }}
+        .swagger-ui .info p {{ color: #cccccc; }}
+        .swagger-ui .info a {{ color: #E8DCC4; }}
+        .swagger-ui .scheme-container {{ background: #1a1a1a; box-shadow: none; border-bottom: 1px solid rgba(212,195,163,0.15); }}
+        .swagger-ui .opblock-tag {{ color: #E8DCC4; font-family: 'Playfair Display', serif; font-size: 1.5rem; border-bottom-color: rgba(212,195,163,0.15); }}
+        .swagger-ui .opblock {{ border: 1px solid rgba(212,195,163,0.15); background: rgba(26,26,26,0.7); box-shadow: none; border-radius: 12px; }}
+        .swagger-ui .opblock .opblock-summary {{ border-bottom-color: rgba(212,195,163,0.15); }}
+        .swagger-ui .opblock .opblock-summary-operation-id, .swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-path__deprecated {{ color: #f5f5f5; }}
+        .swagger-ui .opblock .opblock-summary-description {{ color: #cccccc; }}
+        .swagger-ui .opblock.opblock-post {{ border-color: rgba(212,195,163,0.4); background: rgba(212,195,163,0.05); }}
+        .swagger-ui .opblock.opblock-get {{ border-color: rgba(212,195,163,0.4); background: rgba(212,195,163,0.05); }}
+        .swagger-ui .opblock.opblock-post .opblock-summary-method {{ background: #D4C3A3; color: #121212; border-radius: 6px; }}
+        .swagger-ui .opblock.opblock-get .opblock-summary-method {{ background: #B5A382; color: #121212; border-radius: 6px; }}
+        .swagger-ui .btn {{ border-color: #D4C3A3; color: #D4C3A3; background: transparent; font-family: 'Outfit', sans-serif; border-radius: 8px; }}
+        .swagger-ui .btn:hover {{ background: #D4C3A3; color: #121212; }}
+        .swagger-ui .opblock-body pre.microlight {{ background: #222222 !important; color: #E8DCC4 !important; border-radius: 8px; }}
+        .swagger-ui .parameter__name, .swagger-ui .parameter__type {{ color: #f5f5f5; }}
+        .swagger-ui .parameter__in, .swagger-ui .parameter__extension {{ color: #888888; }}
+        .swagger-ui table thead tr td, .swagger-ui table thead tr th {{ color: #D4C3A3; border-bottom: 1px solid rgba(212,195,163,0.15); }}
+        .swagger-ui .response-col_status, .swagger-ui .response-col_description {{ color: #f5f5f5; }}
+        .swagger-ui .responses-inner h4, .swagger-ui .responses-inner h5 {{ color: #D4C3A3; }}
+        .swagger-ui .opblock-body .opblock-section .opblock-section-header {{ background: #1a1a1a; border-color: rgba(212,195,163,0.15); }}
+        .swagger-ui .opblock-body .opblock-section .opblock-section-header h4 {{ color: #D4C3A3; }}
+        .swagger-ui label {{ color: #f5f5f5; font-family: 'Outfit', sans-serif; }}
+        .swagger-ui .tab li {{ color: #cccccc; }}
+        .swagger-ui .tab li.active {{ border-color: #D4C3A3; color: #f5f5f5; }}
+        .swagger-ui input[type=text], .swagger-ui input[type=password], .swagger-ui input[type=search], .swagger-ui input[type=email], .swagger-ui input[type=file], .swagger-ui textarea {{ background: #222222; border-color: rgba(212,195,163,0.3); color: #f5f5f5; border-radius: 6px; }}
+        .swagger-ui select {{ background: #222222; border-color: rgba(212,195,163,0.3); color: #f5f5f5; border-radius: 6px; }}
+        .swagger-ui .models {{ border-color: rgba(212,195,163,0.15); background: rgba(26,26,26,0.7); border-radius: 12px; }}
+        .swagger-ui .models h4 {{ color: #D4C3A3; font-family: 'Playfair Display', serif; border-bottom-color: rgba(212,195,163,0.15); }}
+        .swagger-ui .model-title {{ color: #f5f5f5; font-family: 'Outfit', sans-serif; }}
+        .swagger-ui .model {{ color: #cccccc; }}
+        .swagger-ui .prop-type {{ color: #E8DCC4; }}
+        .swagger-ui .prop-format {{ color: #888888; }}
+        .swagger-ui svg {{ fill: #E8DCC4; }}
+        .swagger-ui .model-box {{ background: #1a1a1a; border-radius: 8px; }}
+        .swagger-ui section.models .model-container {{ background: rgba(26,26,26,0.7); }}
+        .swagger-ui .topbar {{ display: none; }}
+    </style>
+    </head>
+    <body>
+    <div id="swagger-ui"></div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+    window.onload = function() {{
+        SwaggerUIBundle({{
+            url: "{app.openapi_url}",
+            dom_id: '#swagger-ui',
+        }})
+    }}
+    </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(html)
 
 
 # ── Run ───────────────────────────────────────────────
