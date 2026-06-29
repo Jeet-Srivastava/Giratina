@@ -229,7 +229,10 @@ async def custom_swagger_ui_html():
         .swagger-ui select {{ background: #222222; border-color: rgba(212,195,163,0.3); color: #f5f5f5; border-radius: 6px; }}
         .swagger-ui .models {{ border-color: rgba(212,195,163,0.15); background: rgba(26,26,26,0.7); border-radius: 12px; }}
         .swagger-ui .models h4 {{ color: #D4C3A3; font-family: 'Playfair Display', serif; border-bottom-color: rgba(212,195,163,0.15); }}
-        .swagger-ui .model-title {{ color: #f5f5f5; font-family: 'Outfit', sans-serif; }}
+        .swagger-ui .model-title {{ color: #f5f5f5; font-family: 'Outfit', sans-serif; background: transparent !important; }}
+        .swagger-ui .model-box-control {{ background: transparent !important; color: #f5f5f5 !important; }}
+        .swagger-ui .model-toggle {{ background: transparent !important; color: #D4C3A3 !important; }}
+        .swagger-ui .model-toggle::after {{ filter: invert(1); }}
         .swagger-ui .model {{ color: #cccccc; }}
         .swagger-ui .prop-type {{ color: #E8DCC4; }}
         .swagger-ui .prop-format {{ color: #888888; }}
