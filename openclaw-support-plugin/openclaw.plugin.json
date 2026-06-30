@@ -1,0 +1,22 @@
+{
+  "id": "support-knowledge-claw",
+  "name": "Support Knowledge Claw",
+  "description": "OpenClaw tools for the Eko Support Knowledge Claw automation workflow.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "contracts": {
+    "tools": [
+      "eko_support_chat",
+      "eko_claw_manifest",
+      "eko_tool_contracts",
+      "eko_update_ticket_status"
+    ]
+  }
+}

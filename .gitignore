@@ -10,10 +10,12 @@ build/
 .env
 .venv/
 venv/
+node_modules/
 
 # Data
 chroma_db/
 *.db
+openclaw-workspace/
 
 # IDE
 .vscode/
