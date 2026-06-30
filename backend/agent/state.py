@@ -15,6 +15,7 @@ class AgentState(TypedDict, total=False):
     query: str
     retailer_id: str
     session_id: str
+    memory_context: dict
 
     # Classification
     intent: str
@@ -38,6 +39,7 @@ class AgentState(TypedDict, total=False):
     needs_escalation: bool
     escalation_reason: str
     escalation_note: Optional[dict]
+    ticket_status: str
 
     # Logging
     support_log_id: Optional[int]

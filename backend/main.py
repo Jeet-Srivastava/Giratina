@@ -22,7 +22,7 @@ from backend.config import settings
 from backend.database import init_db
 from backend.knowledge.ingestion import ingest_directory
 from backend.knowledge.store import get_document_count
-from backend.routers import chat, admin, knowledge
+from backend.routers import chat, admin, knowledge, claw
 
 # ── Logging ───────────────────────────────────────────
 
@@ -137,6 +137,7 @@ async def preflight_handler(rest_of_path: str):
 app.include_router(chat.router)
 app.include_router(admin.router)
 app.include_router(knowledge.router)
+app.include_router(claw.router)
 
 
 # ── Health Check ──────────────────────────────────────
@@ -148,9 +149,10 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "Support Knowledge Claw",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "knowledge_base": {"chunks": doc_count, "status": "ready" if doc_count > 0 else "empty"},
         "llm": {"provider": "groq", "model": settings.groq_model},
+        "claw_runtime": {"manifest": "/api/claw/manifest", "tools": "/api/claw/tools"},
     }
 
 

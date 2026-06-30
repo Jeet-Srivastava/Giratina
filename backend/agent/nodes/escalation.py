@@ -12,7 +12,7 @@ import logging
 from langchain_groq import ChatGroq
 from backend.agent.state import AgentState
 from backend.agent.prompts import ESCALATION_PROMPT
-from backend.agent.utils import parse_llm_json
+from backend.agent.utils import format_memory_context, parse_llm_json
 from backend.config import settings
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,25 @@ SLA_MAP = {
     "LOW": "48 hours",
 }
 
+SECURITY_KEYWORDS = [
+    "fraud",
+    "unauthorized",
+    "stolen",
+    "hacked",
+    "scam",
+    "someone using",
+    "without my permission",
+    "money stolen",
+]
+
+
+def _assign_team(product_area: str, query: str) -> str:
+    """Assign the best human queue using product area and security signals."""
+    query_lower = query.lower()
+    if product_area == "security" or any(keyword in query_lower for keyword in SECURITY_KEYWORDS):
+        return "Security & Fraud"
+    return TEAM_ASSIGNMENT.get(product_area, "General Support")
+
 
 def handle_escalation(state: AgentState) -> dict:
     """Create a structured escalation note."""
@@ -47,6 +66,7 @@ def handle_escalation(state: AgentState) -> dict:
     confidence = state.get("confidence", 0.0)
     reason = state.get("escalation_reason", "Low confidence")
     response = state.get("response", "")
+    memory = format_memory_context(state.get("memory_context"))
 
     try:
         llm = ChatGroq(
@@ -63,13 +83,14 @@ def handle_escalation(state: AgentState) -> dict:
             product_area=product_area,
             confidence=confidence,
             reason=reason,
+            memory=memory,
             response=response,
         )
         result = llm.invoke(prompt)
         note = parse_llm_json(result.content)
 
         # Override team assignment with rule-based logic (more reliable)
-        assigned_team = TEAM_ASSIGNMENT.get(product_area, note.get("assigned_team", "General Support"))
+        assigned_team = _assign_team(product_area, query)
 
         # Override priority based on urgency
         priority_map = {"critical": "CRITICAL", "high": "HIGH", "medium": "MEDIUM", "low": "LOW"}
@@ -88,6 +109,7 @@ def handle_escalation(state: AgentState) -> dict:
 
         return {
             "escalation_note": escalation_note,
+            "ticket_status": "assigned",
             "agent_steps": state.get("agent_steps", []) + [
                 {"step": "Escalation", "result": f"{priority} → {assigned_team}", "duration_ms": duration}
             ],
@@ -98,7 +120,7 @@ def handle_escalation(state: AgentState) -> dict:
         duration = int((time.time() - start) * 1000)
 
         # Fallback escalation note
-        assigned_team = TEAM_ASSIGNMENT.get(product_area, "General Support")
+        assigned_team = _assign_team(product_area, query)
         priority_map = {"critical": "CRITICAL", "high": "HIGH", "medium": "MEDIUM", "low": "LOW"}
         priority = priority_map.get(urgency, "MEDIUM")
 
@@ -110,6 +132,7 @@ def handle_escalation(state: AgentState) -> dict:
                 "assigned_team": assigned_team,
                 "sla": SLA_MAP.get(priority, "24 hours"),
             },
+            "ticket_status": "assigned",
             "agent_steps": state.get("agent_steps", []) + [
                 {"step": "Escalation", "result": f"{priority} → {assigned_team} (fallback)", "duration_ms": duration}
             ],

@@ -6,9 +6,9 @@
 |---|---|
 | **Name** | Support Knowledge Claw |
 | **Track** | Forward Deployed AI Accelerator |
-| **Version** | 1.0.0 |
+| **Version** | 2.0.0 |
 | **Author** | Jeet Srivastava |
-| **Framework** | LangGraph + FastAPI |
+| **Framework** | LangGraph + FastAPI + Claw tool contracts |
 | **LLM** | Groq (Llama 3.3 70B Versatile) |
 
 ## Mission
@@ -21,15 +21,22 @@ Transform Eko's micro-entrepreneur support workflow into an autonomous AI agent 
 START
   │
   ▼
+[0. LOAD RETAILER MEMORY + OPEN TICKET]
+  │  Input:  query + retailer_id/session_id
+  │  Output: memory_context + persistent support_log_id
+  │  Method: SQLite lookup of recent queries, prior escalations, open/assigned tickets
+  │  State:  Creates ticket with status=open before agent execution
+  │
+  ▼
 [1. CLASSIFY INTENT]
-  │  Input:  User query (text)
+  │  Input:  User query (text) + memory_context
   │  Output: intent (faq | technical_issue | transaction_problem | account_issue | feature_request)
   │          product_area (aeps | money_transfer | commission | account | general | security)
   │  Method: Groq LLM with structured JSON output
   │
   ▼
 [2. ASSESS URGENCY]
-  │  Input:  Query + intent + product_area
+  │  Input:  Query + intent + product_area + memory_context
   │  Output: urgency (low | medium | high | critical)
   │  Method: Rules-based keyword matching + LLM assessment (hybrid)
   │  Rules:  "fraud", "unauthorized", "stolen" → CRITICAL (no LLM needed)
@@ -44,7 +51,7 @@ START
   │
   ▼
 [4. GENERATE RESPONSE]
-  │  Input:  Query + intent + urgency + product_area + retrieved contexts
+  │  Input:  Query + intent + urgency + product_area + retrieved contexts + memory_context
   │  Output: Structured answer with sources and next steps
   │  Method: Groq LLM with context-grounded generation
   │  Style:  Simple language, numbered steps, empathetic tone (for tier-2/3 retailers)
@@ -73,6 +80,53 @@ START
                 ▼
               [CREATE LOG] → END
 ```
+
+## Formal Claw Runtime Mapping
+
+The current LangGraph workflow is mapped into the formal Claw runtime surface through `backend/agent/contracts.py` and the API endpoints `/api/claw/manifest` and `/api/claw/tools`.
+
+| Runtime | Mapping |
+|---|---|
+| **OpenClaw** | The LangGraph DAG is the OpenClaw state graph. `AgentState` maps to shared runtime memory, and every node is exported as a typed tool contract. |
+| **NemoClaw** | Retrieval, RAG context, and multi-turn retailer memory map to NemoClaw knowledge/memory capabilities. |
+| **NanoClaw** | Classification, urgency, and confidence evaluation can run as small stateless NanoClaw tools with JSON-schema inputs/outputs. |
+| **Hermes Agent** | Escalation output maps to a Hermes handoff: priority, reason, summary, recommended action, assigned team, SLA, and lifecycle state. |
+
+## Tool Contracts
+
+Each node has an explicit contract with input schema, output schema, runtime targets, and failure policy:
+
+| Tool | Runtime Targets | Key Output |
+|---|---|---|
+| `classify_intent` | OpenClaw, NanoClaw | `intent`, `product_area` |
+| `assess_urgency` | OpenClaw, NanoClaw | `urgency` |
+| `retrieve_context` | OpenClaw, NemoClaw | `retrieved_contexts[]` |
+| `generate_response` | OpenClaw, NemoClaw | `response`, `sources`, `next_steps` |
+| `evaluate_confidence` | OpenClaw, NanoClaw | `confidence`, `needs_escalation`, `escalation_reason` |
+| `handle_escalation` | OpenClaw, Hermes Agent | `escalation_note`, `ticket_status=assigned` |
+
+## Persistent Ticket Lifecycle
+
+Support logs now behave as tickets with these states:
+
+| State | Meaning |
+|---|---|
+| `open` | Ticket created before the graph executes |
+| `assigned` | Low-confidence, critical, fraud/security, or unresolved issue assigned to a human team |
+| `resolved` | Agent produced a high-confidence autonomous answer |
+| `closed` | Admin or downstream workflow closes the ticket |
+
+Lifecycle timestamps are persisted as `updated_at`, `assigned_at`, `resolved_at`, and `closed_at`. Admins can update state with `PATCH /api/logs/{log_id}/status`.
+
+## Multi-Turn Memory
+
+Before the graph runs, the API loads memory by `retailer_id` or `session_id`:
+
+- recent queries
+- escalation history
+- open or assigned tickets
+
+This `memory_context` is passed into classification, urgency, response generation, and escalation so follow-up questions can refer to a retailer's previous query and escalation history.
 
 ## Tools & APIs Used
 
@@ -139,9 +193,19 @@ START
 | Money/fraud/legal keywords | Auto-set urgency to CRITICAL |
 | Database error | Continue without logging (response still delivered) |
 
+## Test Coverage Added in v2.0
+
+- Low-confidence escalation
+- LLM generation failure fallback
+- JSON parsing failure fallback
+- Retrieval failure escalation
+- Critical fraud/security routing to Security & Fraud
+- Claw manifest/tool contract API exposure
+- Ticket lifecycle state update
+
 ## Autonomy Assessment
 
-### What It Does Autonomously (v1.0)
+### What It Does Autonomously (v2.0)
 - ✅ Classifies query intent and product area
 - ✅ Assesses urgency (hybrid rules + LLM)
 - ✅ Retrieves relevant knowledge via RAG
@@ -150,11 +214,13 @@ START
 - ✅ Decides to respond or escalate
 - ✅ Creates structured escalation notes
 - ✅ Logs all interactions with full metadata
+- ✅ Exposes Claw runtime manifest and tool contracts
+- ✅ Persists open, assigned, resolved, and closed lifecycle states
+- ✅ Uses multi-turn retailer memory and escalation history
 
-### What v2.0 Would Add
-- Multi-turn conversation memory
-- Learning from resolved escalations (feedback loop)
+### What a Future Version Would Add
 - Multi-language support (Hindi, Tamil, Telugu)
+- Learning from resolved escalations (feedback loop)
 - Voice input processing
 - Direct Eko API integration (real transaction status checks)
 - Proactive monitoring (detect issue spikes before they escalate)

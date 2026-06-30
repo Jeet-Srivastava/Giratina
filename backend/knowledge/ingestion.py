@@ -22,13 +22,18 @@ CHUNK_OVERLAP = 80      # overlapping characters between chunks
 # Map filenames to product areas for metadata
 PRODUCT_AREA_MAP = {
     "aeps": "aeps",
+    "dmt": "money_transfer",
     "money_transfer": "money_transfer",
     "bill_payment": "bill_payment",
     "recharge": "recharge",
     "commission": "commission",
     "settlement": "commission",
+    "kyc": "account",
+    "wallet": "account",
+    "block": "account",
     "account": "account",
     "activation": "account",
+    "csp": "general",
     "escalation": "general",
     "general": "general",
     "faq": "general",

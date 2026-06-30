@@ -12,7 +12,7 @@ import logging
 from langchain_groq import ChatGroq
 from backend.agent.state import AgentState
 from backend.agent.prompts import GENERATOR_PROMPT
-from backend.agent.utils import parse_llm_json
+from backend.agent.utils import format_memory_context, parse_llm_json
 from backend.config import settings
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ def generate_response(state: AgentState) -> dict:
     urgency = state.get("urgency", "medium")
     product_area = state.get("product_area", "general")
     contexts = state.get("retrieved_contexts", [])
+    memory = format_memory_context(state.get("memory_context"))
 
     # Build context string from retrieved chunks
     if contexts:
@@ -49,6 +50,7 @@ def generate_response(state: AgentState) -> dict:
             intent=intent,
             urgency=urgency,
             product_area=product_area,
+            memory=memory,
             context=context_str,
         )
         response = llm.invoke(prompt)

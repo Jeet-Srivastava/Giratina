@@ -93,3 +93,45 @@ def parse_llm_json(content: str) -> dict:
                 pass
 
     raise ValueError(f"Could not parse JSON from LLM output: {text[:200]}")
+
+
+def format_memory_context(memory_context: dict | None) -> str:
+    """Format retailer memory into compact prompt context."""
+    if not memory_context:
+        return "No prior retailer memory available."
+
+    recent = memory_context.get("recent_queries", [])[:3]
+    escalations = memory_context.get("escalation_history", [])[:3]
+    open_tickets = memory_context.get("open_tickets", [])[:3]
+
+    if not recent and not escalations and not open_tickets:
+        return "No prior retailer queries or escalations found for this retailer/session."
+
+    lines = []
+    if recent:
+        lines.append("Recent queries:")
+        for item in recent:
+            lines.append(
+                "- "
+                f"{item.get('created_at', '')}: {item.get('query', '')[:160]} "
+                f"(intent={item.get('intent', 'unknown')}, status={item.get('status', 'open')})"
+            )
+    if escalations:
+        lines.append("Escalation history:")
+        for item in escalations:
+            lines.append(
+                "- "
+                f"{item.get('created_at', '')}: {item.get('query', '')[:140]} "
+                f"-> {item.get('assigned_team', 'General Support')} "
+                f"because {item.get('escalation_reason', 'not specified')}"
+            )
+    if open_tickets:
+        lines.append("Open or assigned tickets:")
+        for item in open_tickets:
+            lines.append(
+                "- "
+                f"{item.get('query', '')[:140]} "
+                f"(status={item.get('status', 'open')}, product_area={item.get('product_area', 'general')})"
+            )
+
+    return "\n".join(lines)

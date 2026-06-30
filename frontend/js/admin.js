@@ -45,11 +45,13 @@ async function loadAnalytics() {
 async function loadLogs() {
     const intent = document.getElementById('filterIntent').value;
     const urgency = document.getElementById('filterUrgency').value;
+    const status = document.getElementById('filterStatus').value;
 
     const params = new URLSearchParams();
     params.set('limit', '20');
     if (intent) params.set('intent', intent);
     if (urgency) params.set('urgency', urgency);
+    if (status) params.set('status', status);
 
     try {
         const res = await fetch(`${API_BASE}/api/logs?${params}`);
@@ -138,9 +140,7 @@ function renderLogsTable(logs) {
             <td><span class="meta-badge badge-intent">${escapeHtml(log.intent)}</span></td>
             <td><span class="meta-badge badge-urgency-${log.urgency}">${escapeHtml(log.urgency)}</span></td>
             <td>${(log.confidence * 100).toFixed(0)}%</td>
-            <td>${log.needs_escalation
-                ? '<span class="meta-badge badge-escalated">Escalated</span>'
-                : '<span class="meta-badge badge-resolved">Resolved</span>'}</td>
+            <td><span class="meta-badge badge-status-${escapeHtml(log.status)}">${escapeHtml(log.status)}</span></td>
             <td>${formatDate(log.created_at)}</td>
         </tr>
     `).join('');
@@ -185,6 +185,7 @@ function renderEscalationsTable(escalations) {
             <td class="truncate" title="${escapeHtml(e.query)}">${escapeHtml(e.query)}</td>
             <td><span class="meta-badge badge-urgency-${e.urgency}">${escapeHtml(e.escalation_priority || e.urgency)}</span></td>
             <td>${escapeHtml(e.assigned_team || '—')}</td>
+            <td><span class="meta-badge badge-status-${escapeHtml(e.status)}">${escapeHtml(e.status)}</span></td>
             <td class="truncate" title="${escapeHtml(e.escalation_reason)}">${escapeHtml(e.escalation_reason || '—')}</td>
             <td>${formatDate(e.created_at)}</td>
         </tr>
@@ -198,6 +199,7 @@ function renderEscalationsTable(escalations) {
                     <th>Query</th>
                     <th>Priority</th>
                     <th>Team</th>
+                    <th>Status</th>
                     <th>Reason</th>
                     <th>Time</th>
                 </tr>

@@ -20,10 +20,44 @@ The Support Knowledge Claw is an **Autonomous AI Agent** that transforms Eko's s
 ## 🏗️ Architecture
 
 ```
-User Query → Intent Classifier → Urgency Assessor → RAG Retriever
+User Query → Retailer Memory → Open Ticket → Intent Classifier → Urgency Assessor → RAG Retriever
     → Response Generator → Confidence Evaluator → [Respond / Escalate]
-    → Support Log → Analytics
+    → Lifecycle Update → Support Log → Analytics
 ```
+
+## Claw Runtime Mapping
+
+This version exposes the LangGraph implementation as a formal Claw runtime manifest:
+
+| Runtime | Mapping |
+|---|---|
+| OpenClaw | Stateful DAG orchestration. Each LangGraph node is exported as a typed tool contract. |
+| NemoClaw | Knowledge and memory runtime for retrieval, RAG context, and retailer history. |
+| NanoClaw | Lightweight local execution for stateless tools like classification, urgency, and confidence checks. |
+| Hermes Agent | Human handoff runtime for structured escalation notes, assigned team, SLA, and ticket status. |
+
+Runtime metadata is available from the running API:
+
+| Endpoint | Purpose |
+|---|---|
+| `/api/claw/manifest` | Full workflow mapping, lifecycle states, memory policy, and tool contracts |
+| `/api/claw/tools` | Input/output JSON schemas for every node/tool |
+
+Each node now has an explicit contract in `backend/agent/contracts.py`, including input schema, output schema, runtime targets, and failure policy.
+
+## Ticket Lifecycle & Memory
+
+Every chat request creates a persistent ticket in `open` state before the graph runs. After evaluation:
+
+| Outcome | Ticket State |
+|---|---|
+| Agent resolves confidently | `resolved` |
+| Low confidence or critical issue | `assigned` |
+| Manual/admin closure | `closed` |
+
+The admin API can update lifecycle state with `PATCH /api/logs/{log_id}/status`.
+
+Multi-turn memory is loaded by `retailer_id` or `session_id` before graph execution. The agent remembers recent queries, previous escalations, and open/assigned tickets, then passes that context into classification, urgency assessment, response generation, and escalation.
 
 **Tech Stack:**
 
@@ -91,6 +125,8 @@ curl -X POST http://localhost:8000/api/chat \
   -d '{"query": "My AePS transaction failed but money was deducted"}'
 ```
 
+The test suite includes coverage for low-confidence escalation, LLM failure fallback, JSON parsing fallback, retrieval failure escalation, critical fraud/security escalation, Claw manifest exposure, and ticket lifecycle updates.
+
 ## 🐳 Docker
 
 ```bash
@@ -146,6 +182,8 @@ claw/
 ├── Dockerfile                # Docker build
 └── docker-compose.yml        # Docker orchestration
 ```
+
+The knowledge base includes Eko-specific scenarios for CSP/retailer operations, AePS, DMT, settlement delays, KYC, wallet block, commission disputes, fraud, and escalation policy.
 
 ## 📄 License
 

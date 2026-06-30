@@ -13,7 +13,7 @@ import logging
 from langchain_groq import ChatGroq
 from backend.agent.state import AgentState
 from backend.agent.prompts import URGENCY_PROMPT
-from backend.agent.utils import parse_llm_json
+from backend.agent.utils import format_memory_context, parse_llm_json
 from backend.config import settings
 
 logger = logging.getLogger(__name__)
@@ -50,6 +50,7 @@ def assess_urgency(state: AgentState) -> dict:
     query = state["query"]
     intent = state.get("intent", "unknown")
     product_area = state.get("product_area", "general")
+    memory = format_memory_context(state.get("memory_context"))
 
     # Step 1: Rules-based check (fast, reliable)
     keyword_urgency = _check_keyword_urgency(query)
@@ -74,7 +75,12 @@ def assess_urgency(state: AgentState) -> dict:
             max_tokens=150,
         )
 
-        prompt = URGENCY_PROMPT.format(query=query, intent=intent, product_area=product_area)
+        prompt = URGENCY_PROMPT.format(
+            query=query,
+            intent=intent,
+            product_area=product_area,
+            memory=memory,
+        )
         response = llm.invoke(prompt)
         result = parse_llm_json(response.content)
         urgency = result.get("urgency", "medium")

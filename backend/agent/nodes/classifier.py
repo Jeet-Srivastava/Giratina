@@ -13,7 +13,7 @@ import logging
 from langchain_groq import ChatGroq
 from backend.agent.state import AgentState
 from backend.agent.prompts import CLASSIFIER_PROMPT
-from backend.agent.utils import parse_llm_json
+from backend.agent.utils import format_memory_context, parse_llm_json
 from backend.config import settings
 
 logger = logging.getLogger(__name__)
@@ -23,6 +23,7 @@ def classify_intent(state: AgentState) -> dict:
     """Classify the intent and product area of a support query."""
     start = time.time()
     query = state["query"]
+    memory = format_memory_context(state.get("memory_context"))
 
     try:
         llm = ChatGroq(
@@ -32,7 +33,7 @@ def classify_intent(state: AgentState) -> dict:
             max_tokens=200,
         )
 
-        prompt = CLASSIFIER_PROMPT.format(query=query)
+        prompt = CLASSIFIER_PROMPT.format(query=query, memory=memory)
         response = llm.invoke(prompt)
         result = parse_llm_json(response.content)
         intent = result.get("intent", "unknown")

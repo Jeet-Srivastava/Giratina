@@ -16,15 +16,18 @@ INTENTS:
 
 PRODUCT AREAS:
 - aeps: Aadhaar Enabled Payment System
-- money_transfer: Domestic money transfer (IMPS/NEFT)
+- money_transfer: Domestic money transfer / DMT (IMPS/NEFT)
 - bill_payment: Utility bill payments
 - recharge: Mobile/DTH recharge
 - commission: Commission and settlement
-- account: Account management, KYC, onboarding
-- general: General platform queries
+- account: Account management, KYC, onboarding, wallet block/unblock
+- general: General platform queries, CSP/retailer operations
 - security: Security, fraud, unauthorized access
 
 USER QUERY: {query}
+
+RETAILER MEMORY:
+{memory}
 
 Respond in EXACTLY this JSON format (no other text):
 {{"intent": "<intent>", "product_area": "<product_area>"}}"""
@@ -41,6 +44,9 @@ URGENCY LEVELS:
 QUERY: {query}
 INTENT: {intent}
 PRODUCT AREA: {product_area}
+
+RETAILER MEMORY:
+{memory}
 
 Respond in EXACTLY this JSON format (no other text):
 {{"urgency": "<urgency>", "reason": "<brief_reason>"}}"""
@@ -59,6 +65,9 @@ QUERY: {query}
 INTENT: {intent}
 URGENCY: {urgency}
 PRODUCT AREA: {product_area}
+
+RETAILER MEMORY:
+{memory}
 
 RELEVANT KNOWLEDGE BASE CONTEXT:
 {context}
@@ -105,6 +114,9 @@ URGENCY: {urgency}
 PRODUCT AREA: {product_area}
 CONFIDENCE SCORE: {confidence}
 ESCALATION REASON: {reason}
+
+RETAILER MEMORY:
+{memory}
 
 PARTIAL RESPONSE (if any):
 {response}

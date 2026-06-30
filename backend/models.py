@@ -36,6 +36,13 @@ class EscalationPriority(str, Enum):
     CRITICAL = "CRITICAL"
 
 
+class TicketStatus(str, Enum):
+    OPEN = "open"
+    ASSIGNED = "assigned"
+    RESOLVED = "resolved"
+    CLOSED = "closed"
+
+
 # ── API Request / Response ────────────────────────────
 
 class ChatRequest(BaseModel):
@@ -82,6 +89,7 @@ class ChatResponse(BaseModel):
     escalation: Optional[EscalationNote] = None
     next_steps: str = ""
     support_log_id: Optional[int] = None
+    ticket_status: TicketStatus = TicketStatus.RESOLVED
     agent_steps: list[AgentStep] = []
 
 
@@ -102,6 +110,7 @@ class SupportLogCreate(BaseModel):
     retailer_id: str = ""
     session_id: str = ""
     sources: str = ""
+    status: TicketStatus = TicketStatus.RESOLVED
 
 
 class SupportLogResponse(BaseModel):
@@ -118,9 +127,19 @@ class SupportLogResponse(BaseModel):
     escalation_priority: str
     assigned_team: str
     retailer_id: str
+    session_id: str = ""
     sources: str
     created_at: str
-    status: str
+    updated_at: str = ""
+    assigned_at: str = ""
+    resolved_at: str = ""
+    closed_at: str = ""
+    status: TicketStatus
+
+
+class TicketStatusUpdate(BaseModel):
+    """Update a persisted support ticket lifecycle status."""
+    status: TicketStatus
 
 
 class AnalyticsSummary(BaseModel):

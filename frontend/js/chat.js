@@ -5,8 +5,20 @@
 
 // Use relative URLs (same-origin) — eliminates all CORS issues
 const API_BASE = '';
+const SESSION_KEY = 'support_claw_session_id';
 
 let isProcessing = false;
+
+function getSessionId() {
+    let sessionId = localStorage.getItem(SESSION_KEY);
+    if (!sessionId) {
+        sessionId = window.crypto && window.crypto.randomUUID
+            ? window.crypto.randomUUID()
+            : `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        localStorage.setItem(SESSION_KEY, sessionId);
+    }
+    return sessionId;
+}
 
 // ── Send Message ──────────────────────────────────
 
@@ -32,7 +44,7 @@ async function sendMessage() {
         const response = await fetch(`${API_BASE}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query }),
+            body: JSON.stringify({ query, session_id: getSessionId() }),
         });
 
         if (!response.ok) {
@@ -88,9 +100,8 @@ function appendAgentResponse(data) {
 
     // Build metadata badges
     const urgencyClass = `badge-urgency-${data.urgency}`;
-    const statusBadge = data.needs_escalation
-        ? '<span class="meta-badge badge-escalated">🚨 Escalated</span>'
-        : '<span class="meta-badge badge-resolved">✅ Resolved</span>';
+    const ticketStatus = data.ticket_status || (data.needs_escalation ? 'assigned' : 'resolved');
+    const statusBadge = `<span class="meta-badge badge-status-${escapeHtml(ticketStatus)}">${escapeHtml(ticketStatus)}</span>`;
 
     // Build agent steps
     let stepsHtml = '';

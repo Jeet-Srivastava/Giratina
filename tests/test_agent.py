@@ -4,7 +4,18 @@ Tests for the agent workflow and individual nodes.
 
 import pytest
 from backend.agent.nodes.urgency import _check_keyword_urgency
+from backend.agent.nodes.classifier import classify_intent
+from backend.agent.nodes.evaluator import evaluate_confidence
+from backend.agent.nodes.escalation import handle_escalation
+from backend.agent.nodes.generator import generate_response
+from backend.agent.nodes.retriever import retrieve_context
+from backend.agent.utils import parse_llm_json
 from backend.knowledge.ingestion import _chunk_text, _detect_product_area
+
+
+class FakeResponse:
+    def __init__(self, content: str):
+        self.content = content
 
 
 class TestKeywordUrgency:
@@ -79,3 +90,131 @@ class TestProductAreaDetection:
 
     def test_unknown(self):
         assert _detect_product_area("random_document") == "general"
+
+
+class TestFailureModes:
+    """Reviewer-requested failure-mode coverage."""
+
+    def test_low_confidence_escalates(self, monkeypatch):
+        class LowConfidenceLLM:
+            def __init__(self, **kwargs):
+                pass
+
+            def invoke(self, prompt):
+                return FakeResponse('{"relevance": 0.4, "completeness": 0.5, "groundedness": 0.4}')
+
+        monkeypatch.setattr("backend.agent.nodes.evaluator.ChatGroq", LowConfidenceLLM)
+
+        result = evaluate_confidence({
+            "query": "My DMT transfer is pending",
+            "intent": "transaction_problem",
+            "urgency": "medium",
+            "response": "Please check Transaction Inquiry.",
+            "retrieved_contexts": [
+                {"source": "money_transfer_sop.md", "content": "Check Transaction Inquiry.", "relevance_score": 0.9}
+            ],
+            "agent_steps": [],
+        })
+
+        assert result["confidence"] < 0.75
+        assert result["needs_escalation"] is True
+        assert "Low confidence" in result["escalation_reason"]
+
+    def test_llm_generation_failure_returns_safe_fallback(self, monkeypatch):
+        class FailingLLM:
+            def __init__(self, **kwargs):
+                pass
+
+            def invoke(self, prompt):
+                raise RuntimeError("llm unavailable")
+
+        monkeypatch.setattr("backend.agent.nodes.generator.ChatGroq", FailingLLM)
+
+        result = generate_response({
+            "query": "My AePS transaction failed",
+            "intent": "transaction_problem",
+            "urgency": "high",
+            "product_area": "aeps",
+            "retrieved_contexts": [
+                {"source": "aeps_troubleshooting.md", "content": "Use Transaction Inquiry first.", "relevance_score": 0.9}
+            ],
+            "agent_steps": [],
+        })
+
+        assert "trouble generating" in result["response"]
+        assert result["next_steps"] == "Contact cs@eko.co.in for assistance."
+
+    def test_json_parsing_failure_uses_classifier_fallback(self, monkeypatch):
+        class InvalidJsonLLM:
+            def __init__(self, **kwargs):
+                pass
+
+            def invoke(self, prompt):
+                return FakeResponse("intent is probably faq")
+
+        monkeypatch.setattr("backend.agent.nodes.classifier.ChatGroq", InvalidJsonLLM)
+
+        result = classify_intent({
+            "query": "What is Eko?",
+            "agent_steps": [],
+        })
+
+        assert result["intent"] == "unknown"
+        assert result["product_area"] == "general"
+        with pytest.raises(ValueError):
+            parse_llm_json("intent is probably faq")
+
+    def test_retrieval_failure_leads_to_escalation_path(self, monkeypatch):
+        def failing_store():
+            raise RuntimeError("vector store unavailable")
+
+        monkeypatch.setattr("backend.agent.nodes.retriever.get_vector_store", failing_store)
+
+        retrieval = retrieve_context({
+            "query": "Need settlement help",
+            "product_area": "commission",
+            "agent_steps": [],
+        })
+        evaluation = evaluate_confidence({
+            "query": "Need settlement help",
+            "intent": "transaction_problem",
+            "urgency": "medium",
+            "response": "Fallback response",
+            "retrieved_contexts": retrieval["retrieved_contexts"],
+            "agent_steps": retrieval["agent_steps"],
+        })
+
+        assert retrieval["retrieved_contexts"] == []
+        assert evaluation["needs_escalation"] is True
+        assert evaluation["confidence"] == 0.3
+        assert "No relevant documents" in evaluation["escalation_reason"]
+
+    def test_critical_fraud_routes_to_security_escalation(self, monkeypatch):
+        class EscalationLLM:
+            def __init__(self, **kwargs):
+                pass
+
+            def invoke(self, prompt):
+                return FakeResponse(
+                    '{"priority": "HIGH", "summary": "Account takeover risk", '
+                    '"recommended_action": "Freeze and audit account", '
+                    '"assigned_team": "Account Management", "sla": "24 hours"}'
+                )
+
+        monkeypatch.setattr("backend.agent.nodes.escalation.ChatGroq", EscalationLLM)
+
+        note = handle_escalation({
+            "query": "There is fraud and someone is using my wallet without my permission",
+            "intent": "account_issue",
+            "urgency": "critical",
+            "product_area": "account",
+            "confidence": 0.95,
+            "escalation_reason": "Critical urgency",
+            "response": "This has been escalated.",
+            "agent_steps": [],
+        })
+
+        assert _check_keyword_urgency("Fraud on my retailer wallet") == "critical"
+        assert note["escalation_note"]["priority"] == "CRITICAL"
+        assert note["escalation_note"]["assigned_team"] == "Security & Fraud"
+        assert note["ticket_status"] == "assigned"
